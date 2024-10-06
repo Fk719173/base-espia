@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base Espiã - Sistema de Missões</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1b1b2f;
+            color: #fff;
+            text-align: center;
+        }
+        .container {
+            margin-top: 20px;
+        }
+        .section {
+            margin: 20px auto;
+            padding: 20px;
+            border: 2px solid #00f3b5;
+            border-radius: 10px;
+            background-color: #162447;
+            width: 80%;
+            max-width: 600px;
+        }
+        .button {
+            background-color: #e43f5a;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: #ff6f91;
+        }
+        h1, h2 {
+            color: #00f3b5;
+        }
+        #loginForm, #missionForm, #userProfile, #registerForm {
+            display: none;
+        }
+        .inputField {
+            padding: 10px;
+            margin: 10px 0;
+            width: 100%;
+            max-width: 400px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Base Espiã - Sistema de Missões</h1>
+    <div class="container">
+
+        <!-- Tela de Cadastro -->
+        <div class="section" id="registerForm">
+            <h2>Registrar Usuário</h2>
+            <input type="text" id="nomeRegistro" class="inputField" placeholder="Nome">
+            <input type="password" id="senhaRegistro" class="inputField" placeholder="Senha">
+            <button class="button" onclick="registrarUsuario()">Registrar</button>
+            <button class="button" onclick="toggleSection('loginForm')">Já tem conta? Faça Login</button>
+        </div>
+
+        <!-- Tela de Login -->
+        <div class="section" id="loginForm">
+            <h2>Login</h2>
+            <input type="text" id="nomeLogin" class="inputField" placeholder="Nome">
+            <input type="password" id="senhaLogin" class="inputField" placeholder="Senha">
+            <button class="button" onclick="loginUsuario()">Login</button>
+            <button class="button" onclick="toggleSection('registerForm')">Registrar</button>
+        </div>
+
+        <!-- Perfil do Usuário -->
+        <div class="section" id="userProfile">
+            <h2>Perfil do Usuário</h2>
+            <p id="userName"></p>
+            <p id="userApiKey"></p>
+            <button class="button" onclick="toggleSection('missionForm')">Registrar Missão</button>
+        </div>
+
+        <!-- Registro de Missão -->
+        <div class="section" id="missionForm">
+            <h2>Registrar Missão</h2>
+            <input type="text" id="descricaoMissao" class="inputField" placeholder="Descrição da Missão">
+            <input type="text" id="materiaisMissao" class="inputField" placeholder="Materiais Necessários">
+            <input type="text" id="armasMissao" class="inputField" placeholder="Armas (separadas por vírgula)">
+            <input type="number" id="nivelForcaMissao" class="inputField" placeholder="Nível de Força dos Inimigos">
+            <input type="text" id="convocadoMissao" class="inputField" placeholder="Nome do Convocado">
+            <button class="button" onclick="gerarMissao()">Registrar Missão</button>
+            <ul id="listaMissoes"></ul>
+        </div>
+
+    </div>
+
+    <script>
+        let usuarios = [];
+        let missoes = [];
+        let usuarioAtual = null;
+
+        function toggleSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.getElementById(sectionId).style.display = 'block';
+        }
+
+        function registrarUsuario() {
+            let nome = document.getElementById("nomeRegistro").value;
+            let senha = document.getElementById("senhaRegistro").value;
+            let user = { nome, senha };
+
+            if (nome && senha) {
+                usuarios.push(user);
+                alert(`Usuário ${nome} registrado com sucesso!`);
+                toggleSection('loginForm');
+            } else {
+                alert("Preencha todos os campos!");
+            }
+        }
+
+        function loginUsuario() {
+            let nome = document.getElementById("nomeLogin").value;
+            let senha = document.getElementById("senhaLogin").value;
+
+            let user = usuarios.find(u => u.nome === nome && u.senha === senha);
+
+            if (user) {
+                usuarioAtual = user;
+                alert(`Bem-vindo, ${nome}!`);
+                document.getElementById("userName").innerText = `Usuário: ${nome}`;
+                document.getElementById("userApiKey").innerText = `API Key: ${generateApiKey()}`;
+                toggleSection('userProfile');
+            } else {
+                alert("Nome ou senha incorretos!");
+            }
+        }
+
+        function gerarMissao() {
+            let descricao = document.getElementById("descricaoMissao").value;
+            let materiais = document.getElementById("materiaisMissao").value;
+            let armas = document.getElementById("armasMissao").value;
+            let nivelForca = document.getElementById("nivelForcaMissao").value;
+            let convocado = document.getElementById("convocadoMissao").value;
+
+            let missao = { descricao, materiais, armas, nivelForca, convocado };
+
+            if (descricao && materiais && armas && nivelForca && convocado) {
+                missoes.push(missao);
+                alert("Missão registrada com sucesso!");
+                document.getElementById("descricaoMissao").value = "";
+                document.getElementById("materiaisMissao").value = "";
+                document.getElementById("armasMissao").value = "";
+                document.getElementById("nivelForcaMissao").value = "";
+                document.getElementById("convocadoMissao").value = "";
+                listarMissoes();
+            } else {
+                alert("Preencha todos os campos da missão!");
+            }
+        }
+
+        function listarMissoes() {
+            const lista = document.getElementById("listaMissoes");
+            lista.innerHTML = "";
+            missoes.forEach((missao, index) => {
+                const li = document.createElement("li");
+                li.innerText = `${missao.descricao} - Convocado: ${missao.convocado}`;
+                lista.appendChild(li);
+            });
+        }
+
+        function generateApiKey() {
+            return 'API-' + Math.random().toString(36).substring(2, 15);
+        }
+    </script>
+</body>
+</html>
